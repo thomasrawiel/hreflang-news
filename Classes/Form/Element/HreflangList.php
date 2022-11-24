@@ -11,7 +11,7 @@ namespace TRAW\HreflangNews\Form\Element;
  * The TYPO3 project - inspiring people to share!
  */
 
-use TRAW\HreflangPages\Utility\HreflangListUtility;
+use TRAW\HreflangNews\Utility\HreflangListUtility;
 use TYPO3\CMS\Backend\Form\Element\AbstractFormElement;
 use TYPO3\CMS\Backend\Form\NodeFactory;
 use TYPO3\CMS\Core\Utility\GeneralUtility;

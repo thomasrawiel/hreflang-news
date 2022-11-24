@@ -186,10 +186,10 @@ class HreflangListUtility
                 $href = UrlUtility::getAbsoluteUrl($translation['slug'], $language);
                 $hreflangs[$relationUid][$language->getHreflang()] = $href;
 
-                if ($language->getLanguageId() === 0 && !isset($hreflangs[$relationUid]['x-default']) && $translation['tx_hreflang_pages_xdefault']) {
+                if ($language->getLanguageId() === 0 && !isset($hreflangs[$relationUid]['x-default']) && $translation['tx_hreflang_news_xdefault']) {
                     $hreflangs[$relationUid]['x-default'] = $href;
 
-                    if ($this->databaseRow['tx_hreflang_pages_xdefault']) {
+                    if ($this->databaseRow['tx_hreflang_news_xdefault']) {
                         $this->addMessage('x-default-conflict', 'warning', [0 => $translation['uid']]);
                     }
                 }
@@ -272,9 +272,9 @@ class HreflangListUtility
     protected function getPageTranslationLanguages()
     {
         /** @var QueryBuilder $queryBuilder */
-        $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)->getQueryBuilderForTable('pages');
+        $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)->getQueryBuilderForTable('tx_news_domain_model_news');
         $result = $queryBuilder->select('sys_language_uid')
-            ->from('pages')
+            ->from('tx_news_domain_model_news')
             ->where(
                 $queryBuilder->expr()->andX(
                     $queryBuilder->expr()->orX(
