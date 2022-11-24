@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<xliff version="1.0">
+    <file source-language="en" datatype="plaintext" original="messages" date="2015-11-16T11:03:17Z"
+          product-name="hreflang_pages">
+        <header/>
+        <body>
+            <trans-unit id="div.hreflang">
+                <source>SEO/ Hreflang</source>
+            </trans-unit>
+            <trans-unit id="palette.hreflang_connections">
+                <source>Hreflang Configuration</source>
+            </trans-unit>
+            <trans-unit id="no-index-no-preview">
+                <source>
+                    <![CDATA[<strong>Note:</strong> No hreflang tags will be rendered, because the page is set to not index this page (see SEO tab)]]></source>
+            </trans-unit>
+            <trans-unit id="siteconfig-no-preview">
+                <source>
+                    <![CDATA[<strong>Note:</strong> No hreflang preview could be rendered, because no site configuration was found.]]></source>
+            </trans-unit>
+            <trans-unit id="canonical-no-preview">
+                <source>No hreflang tags will be rendered, because a canonical url has been set for this page (see SEO
+                    tab)
+                </source>
+            </trans-unit>
+            <trans-unit id="translation-missing-no-preview">
+                <source>No hreflang tags will be rendered, because this page has no translations or connected hreflang
+                    pages.
+                </source>
+            </trans-unit>
+            <trans-unit id="x-default-conflict">
+                <source>X-Default conflict detected between this page and page uid: %s</source>
+            </trans-unit>
+            <trans-unit id="warning-same-language">
+                <source>%s: Pages with the same language should not be used as hreflang, use canonical url instead
+                </source>
+            </trans-unit>
+            <trans-unit id="languages.headline">
+                <source>Available Translations for this page</source>
+            </trans-unit>
+            <trans-unit id="hreflang.headline">
+                <source>Preview of rendered hreflang tags</source>
+            </trans-unit>
+            <trans-unit id="page.preview">
+                <source>Hreflang Preview</source>
+            </trans-unit>
+            <trans-unit id="connected-pages">
+                <source>Hreflang Connections from this page to other pages</source>
+            </trans-unit>
+            <trans-unit id="connected-pages-2">
+                <source>Hreflang Connections from other pages to this page</source>
+            </trans-unit>
+            <trans-unit id="force-x-default">
+                <source>Hreflang: Use this page as x-default</source>
+            </trans-unit>
+            <trans-unit id="force-x-default.hint">
+                <source>Hint: If active, please check that none of the connected pages is also set as x-default</source>
+            </trans-unit>
+        </body>
+    </file>
+</xliff>
