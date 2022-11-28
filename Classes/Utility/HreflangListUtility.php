@@ -103,15 +103,17 @@ class HreflangListUtility
     {
         $content = "<strong class='headline'>" . LocalizationUtility::translate(self::lll . 'hreflang.headline') . "</strong>";
 
+        //temp
+        return $content;
         $hrefLangs = [];
-        if (empty($this->databaseRow['canonical_link'])) {
+
             foreach ($this->site->getLanguages() as $language) {
                 if ($language === $this->site->getDefaultLanguage()) {
-                    $hrefLangs[$language->getHreflang()] = UrlUtility::getAbsoluteUrl($this->databaseRow['slug'], $language);
+                    $hrefLangs[$language->getHreflang()] = UrlUtility::getAbsoluteUrl($this->databaseRow['path_segment'], $language);
                 } else {
                     $translation = $this->getPageTranslatedInLanguage($language->getLanguageId());
                     if (!is_null($translation)) {
-                        $hrefLangs[$language->getHreflang()] = UrlUtility::getAbsoluteUrl($translation['slug'], $language);
+                        $hrefLangs[$language->getHreflang()] = UrlUtility::getAbsoluteUrl($translation['path_segment'], $language);
                     }
                 }
             }
@@ -134,9 +136,7 @@ class HreflangListUtility
                 $hrefLangs['x-default'] = $hrefLangs[$this->site->getDefaultLanguage()->getHreflang()];
             }
             ksort($hrefLangs);
-        } else {
-            $this->addMessage('canonical-no-preview');
-        }
+
 
         if (count($hrefLangs) > 1) {
             $content .= '<ul class="hrefLangs">';
