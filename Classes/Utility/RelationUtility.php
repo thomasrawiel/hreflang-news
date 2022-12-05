@@ -42,34 +42,36 @@ class RelationUtility
     /**
      * Get hreflang relations from cache or generate the list and cache them
      *
-     * @param int $pageId
+     * @param int $newsUid
+     *
      * @return array $relations
      * @throws NoSuchCacheGroupException|NoSuchCacheException
      */
-    public function getCachedRelations(int $pageId): array
+    public function getCachedRelations(int $newsUid): array
     {
-        $relations = $this->getCacheInstance()->get($pageId);
+        $relations = $this->getCacheInstance()->get($newsUid);
         if (false === $relations) {
-            $relations = $this->buildRelations($pageId);
-            $this->resetRelationCache($pageId, $relations);
+            $relations = $this->buildRelations($newsUid);
+            $this->resetRelationCache($newsUid, $relations);
         }
 
-        return $this->getAllRelationUids($relations, $pageId);
+        return $this->getAllRelationUids($relations, $newsUid);
     }
 
     /**
-     * @param int $pageId
+     * @param int   $newsUid
      * @param array $relations
+     *
      * @throws NoSuchCacheGroupException|NoSuchCacheException
      */
-    public function resetRelationCache(int $pageId, array $relations)
+    public function resetRelationCache(int $newsUid, array $relations)
     {
         $tags = array_map(function ($value) {
-            return 'pageId_' . $value['uid_foreign'];
+            return 'newsId_' . $value['uid_foreign'];
         }, $relations);
         if (!empty($tags)) {
-            $this->cacheManager->flushCachesInGroupByTags('pages', $tags);
-            $this->getCacheInstance()->set((string)$pageId, $relations, $tags, 7 * 24 * 60 * 60);
+            $this->cacheManager->flushCachesInGroupByTags('tx_news_domain_model_news', $tags);
+            $this->getCacheInstance()->set((string)$newsUid, $relations, $tags, 7 * 24 * 60 * 60);
         }
     }
 
@@ -105,45 +107,46 @@ class RelationUtility
      */
     public function flushRelationCacheForPage(int $newsUid)
     {
-        $this->cacheManager->flushCachesInGroupByTag('pages', 'pageId_' . $newsUid);
+        $this->cacheManager->flushCachesInGroupByTag('tx_news_domain_model_news', 'newsId_' . $newsUid);
     }
 
     /**
      * Get hreflang relations recursively
      *
-     * @param int $pageId
+     * @param int $newsUid
+     *
      * @return array
      */
-    public function buildRelations(int $pageId): array
+    public function buildRelations(int $newsUid): array
     {
         /** @var QueryBuilder $queryBuilder */
         $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)
-            ->getQueryBuilderForTable('pages');
+            ->getQueryBuilderForTable('tx_news_domain_model_news');
         $queryBuilder->getRestrictions()->removeAll()
             ->add(GeneralUtility::makeInstance(DeletedRestriction::class));
         $relations = $queryBuilder
             ->select('mm.*')
-            ->from('tx_hreflang_pages_page_page_mm', 'mm')
-            ->leftJoin('mm', 'pages', 'p', 'mm.uid_foreign = p.uid')
+            ->from('tx_hreflang_news_news_news_mm', 'mm')
+            ->leftJoin('mm', 'tx_news_domain_model_news', 'n', 'mm.uid_foreign = n.uid')
             ->where($queryBuilder->expr()->orX(
-                $queryBuilder->expr()->eq('mm.uid_local', $pageId),
-                $queryBuilder->expr()->eq('mm.uid_foreign', $pageId)
+                $queryBuilder->expr()->eq('mm.uid_local', $newsUid),
+                $queryBuilder->expr()->eq('mm.uid_foreign', $newsUid)
             ))
             ->execute()
             ->fetchAllAssociative();
 
         foreach ($relations as $relation) {
             $queryBuilder2 = GeneralUtility::makeInstance(ConnectionPool::class)
-                ->getQueryBuilderForTable('pages');
+                ->getQueryBuilderForTable('tx_news_domain_model_news');
             $queryBuilder2->getRestrictions()->removeAll()
                 ->add(GeneralUtility::makeInstance(DeletedRestriction::class));
             $indirectRelations = $queryBuilder2
                 ->select('mm.*')
-                ->from('tx_hreflang_pages_page_page_mm', 'mm')
-                ->leftJoin('mm', 'pages', 'p', 'mm.uid_foreign = p.uid')
+                ->from('tx_hreflang_news_news_news_mm', 'mm')
+                ->leftJoin('mm', 'tx_news_domain_model_news', 'n', 'mm.uid_foreign = n.uid')
                 ->where($queryBuilder2->expr()->andX(
                     $queryBuilder2->expr()->eq('mm.uid_local', (int)$relation['uid_local']),
-                    $queryBuilder2->expr()->neq('mm.uid_foreign', (int)$pageId)
+                    $queryBuilder2->expr()->neq('mm.uid_foreign', (int)$newsUid)
                 ))
                 ->execute()
                 ->fetchAllAssociative();
@@ -176,7 +179,7 @@ class RelationUtility
      * @return FrontendInterface
      * @throws NoSuchCacheException
      */
-    protected function getCacheInstance(string $cacheIdentifier = 'tx_hreflang_pages_cache'): FrontendInterface
+    protected function getCacheInstance(string $cacheIdentifier = 'tx_hreflang_news_cache'): FrontendInterface
     {
         return $this->cacheManager->getCache($cacheIdentifier);
     }

@@ -21,7 +21,8 @@
   },
   "require": {
     "typo3/cms-core": "^10.4",
-    "typo3/cms-seo": "^10.4"
+    "typo3/cms-seo": "^10.4",
+    "georgringer/news-seo": "^1.0"
   },
   "replace": {
     "typo3-ter/hreflang-news": "self.version"

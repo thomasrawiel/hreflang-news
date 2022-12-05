@@ -11,5 +11,5 @@ services:
     tags:
       - name: event.listener
         identifier: 'traw-hreflangnews/hreflangNewsGenerator'
-        after: 'typo3-seo/hreflangGenerator, my-ext/ownHrefLang, traw-hreflangpages/hreflangpagesGenerator'
+        after: 'ext-news/modify-hreflang'
         event: TYPO3\CMS\Frontend\Event\ModifyHrefLangTagsEvent

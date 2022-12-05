@@ -13,6 +13,7 @@ namespace TRAW\HreflangNews\Utility;
 
 use Psr\Http\Message\ServerRequestInterface;
 use stdClass;
+use TRAW\HreflangNews\Seo\NewsAvailability;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Database\Query\QueryBuilder;
 use TYPO3\CMS\Core\Exception\SiteNotFoundException;
@@ -52,7 +53,13 @@ class HreflangListUtility
     protected $messages = [];
 
     /**
+     * @var NewsAvailability
+     */
+    protected $newsAvailability;
+
+    /**
      * HreflangListUtility constructor.
+     *
      * @param array $data
      */
     public function __construct(array $data)
@@ -60,6 +67,7 @@ class HreflangListUtility
         $this->databaseRow = $data['databaseRow'];
         $this->site = $data['site'];
         $this->pageLanguageOverlayRows = $data['pageLanguageOverlayRows'];
+        $this->newsAvailability = GeneralUtility::makeInstance(NewsAvailability::class);
     }
 
     /**
@@ -85,9 +93,10 @@ class HreflangListUtility
     }
 
     /**
-     * @param int $pageId
-     * @param int $languageId
+     * @param int                         $pageId
+     * @param int                         $languageId
      * @param ServerRequestInterface|null $request
+     *
      * @return array
      * @throws SiteNotFoundException
      */
@@ -107,35 +116,37 @@ class HreflangListUtility
         return $content;
         $hrefLangs = [];
 
-            foreach ($this->site->getLanguages() as $language) {
-                if ($language === $this->site->getDefaultLanguage()) {
-                    $hrefLangs[$language->getHreflang()] = UrlUtility::getAbsoluteUrl($this->databaseRow['path_segment'], $language);
-                } else {
-                    $translation = $this->getPageTranslatedInLanguage($language->getLanguageId());
-                    if (!is_null($translation)) {
-                        $hrefLangs[$language->getHreflang()] = UrlUtility::getAbsoluteUrl($translation['path_segment'], $language);
+        foreach ($this->site->getLanguages() as $language) {
+            if ($language === $this->site->getDefaultLanguage()) {
+                $hrefLangs[$language->getHreflang()] = UrlUtility::getAbsoluteUrl($this->databaseRow['path_segment'], $language);
+            } else {
+                $newsAvailability = GeneralUtility::makeInstance(NewsAvailability::class);
+
+                if ($newsAvailability->check($language->getLanguageId(), $this->databaseRow['uid'])) {
+                    $translation = $this->newsAvailability->fetchNewsRecord($this->databaseRow['uid'], $language->getLanguageId());
+                    $hrefLangs[$language->getHreflang()] = UrlUtility::getAbsoluteUrl($translation['path_segment'], $language);
+                }
+            }
+        }
+
+        $connectedHreflangs = $this->getConnectedHreflangs();
+        if (!empty($connectedHreflangs)) {
+            foreach ($connectedHreflangs as $relationUid => $relationHreflang) {
+                foreach ($relationHreflang as $hreflang => $url) {
+                    if (!isset($hrefLangs[$hreflang])) {
+                        $hrefLangs[$hreflang] = $url;
+                    } else {
+                        //$hrefLangs[$hreflang . '_' . $relationUid] = $url;
+                        $this->addMessage('warning-same-language', 'warning', [0 => $hreflang . '_' . $relationUid]);
                     }
                 }
             }
+        }
 
-            $connectedHreflangs = $this->getConnectedHreflangs();
-            if (!empty($connectedHreflangs)) {
-                foreach ($connectedHreflangs as $relationUid => $relationHreflang) {
-                    foreach ($relationHreflang as $hreflang => $url) {
-                        if (!isset($hrefLangs[$hreflang])) {
-                            $hrefLangs[$hreflang] = $url;
-                        } else {
-                            //$hrefLangs[$hreflang . '_' . $relationUid] = $url;
-                            $this->addMessage('warning-same-language', 'warning', [0 => $hreflang . '_' . $relationUid]);
-                        }
-                    }
-                }
-            }
-
-            if (count($hrefLangs) > 1 && !isset($hrefLangs['x-default'])) {
-                $hrefLangs['x-default'] = $hrefLangs[$this->site->getDefaultLanguage()->getHreflang()];
-            }
-            ksort($hrefLangs);
+        if (count($hrefLangs) > 1 && !isset($hrefLangs['x-default'])) {
+            $hrefLangs['x-default'] = $hrefLangs[$this->site->getDefaultLanguage()->getHreflang()];
+        }
+        ksort($hrefLangs);
 
 
         if (count($hrefLangs) > 1) {
@@ -201,7 +212,7 @@ class HreflangListUtility
     /**
      * @param string $text
      * @param string $type
-     * @param array $additionalData
+     * @param array  $additionalData
      */
     protected function addMessage(string $text, string $type = 'info', $additionalData = [])
     {
@@ -228,8 +239,8 @@ class HreflangListUtility
             $title = $language->getTitle() . "/" . $language->getNavigationTitle();
             $hreflang = $language->getHreflang();
 
-            $isAvailable = call_user_func(function ($languageId) {
-                return $languageId > 0 && !is_null($this->getPageTranslatedInLanguage($languageId));
+            $isAvailable = call_user_func(function($languageId) {
+                return $languageId > 0 && !is_null($this->getNewsTranslatedInLanguage($languageId));
 
 
             }, $language->getLanguageId()) ? 'YES' : ($language === $this->site->getDefaultLanguage() ? 'is default' : 'NO');
@@ -251,9 +262,10 @@ class HreflangListUtility
 
     /**
      * @param $languageId
+     *
      * @return mixed|null
      */
-    protected function getPageTranslatedInLanguage($languageId)
+    protected function getNewsTranslatedInLanguage($languageId)
     {
         if (empty($this->pageLanguageOverlayRows)) return null;
 
@@ -297,6 +309,7 @@ class HreflangListUtility
 
     /**
      * @param string $content
+     *
      * @return string
      */
     protected function generateHtml(string $content): string

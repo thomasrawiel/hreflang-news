@@ -11,14 +11,15 @@ namespace TRAW\HreflangNews\Seo\Hreflang;
  * The TYPO3 project - inspiring people to share!
  */
 
-use GeorgRinger\News\Seo\NewsAvailability;
-use Psr\Http\Message\ServerRequestInterface;
-use TRAW\HreflangPages\Utility\PageUtility;
-use TRAW\HreflangPages\Utility\RelationUtility;
-use TRAW\HreflangPages\Utility\UrlUtility;
+use TRAW\HreflangNews\Seo\NewsAvailability;
+use TRAW\HreflangNews\Utility\FetchUtility;
+use TRAW\HreflangNews\Utility\PageUtility;
+use TRAW\HreflangNews\Utility\RelationUtility;
+use TRAW\HreflangNews\Utility\UrlUtility;
 use TYPO3\CMS\Core\Cache\Exception\NoSuchCacheException;
 use TYPO3\CMS\Core\Cache\Exception\NoSuchCacheGroupException;
-use TYPO3\CMS\Core\Site\Entity\SiteInterface;
+use TYPO3\CMS\Core\Exception\SiteNotFoundException;
+use TYPO3\CMS\Core\LinkHandling\RecordLinkHandler;
 use TYPO3\CMS\Core\Site\Entity\SiteLanguage;
 use TYPO3\CMS\Core\Site\SiteFinder;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
@@ -39,7 +40,16 @@ class HreflangNewsGenerator extends HrefLangGenerator
     protected $relationUtility;
 
     /**
+     * @var NewsAvailability
+     */
+    protected $newsAvailability;
+
+    /** @var ContentObjectRenderer */
+    public $cObj;
+
+    /**
      * HreflangPagesGenerator constructor.
+     *
      * @param ContentObjectRenderer $cObj
      * @param LanguageMenuProcessor $languageMenuProcessor
      */
@@ -47,86 +57,84 @@ class HreflangNewsGenerator extends HrefLangGenerator
     {
         parent::__construct($cObj, $languageMenuProcessor);
         $this->relationUtility = GeneralUtility::makeInstance(RelationUtility::class);
+        $this->newsAvailability = GeneralUtility::makeInstance(NewsAvailability::class);
     }
 
     /**
      * @param ModifyHrefLangTagsEvent $event
+     *
+     * @throws NoSuchCacheException
      * @throws NoSuchCacheGroupException
+     * @throws SiteNotFoundException
      */
     public function __invoke(ModifyHrefLangTagsEvent $event): void
     {
         $hrefLangs = $event->getHrefLangs();
-        if ((int)$this->getTypoScriptFrontendController()->page['no_index'] === 1) {
-            return;
-        }
-        //remove the x-default, we will determine that later
-        unset($hrefLangs['x-default']);
-        $newsAvailabilityChecker = GeneralUtility::makeInstance(NewsAvailability::class);
+        $newsId = $this->newsAvailability->getNewsIdFromRequest();
 
-        $languages = $this->languageMenuProcessor->process($this->cObj, [], [], []);
-        $pageId = (int)$this->getTypoScriptFrontendController()->id;
+        if ($newsId > 0) {
+            if (FetchUtility::isNoIndex($newsId)) {
+                return;
+            }
+            //remove the x-default, we will determine that later
+            unset($hrefLangs['x-default']);
 
-        $connectedPages = $this->getConnectedPagesHreflang($pageId);
-        if (!empty($connectedPages)) {
-            foreach ($connectedPages as $relationUid => $relationHreflang) {
-                foreach ($relationHreflang as $hreflang => $url) {
-                    if (!isset($hrefLangs[$hreflang])) {
-                        $hrefLangs[$hreflang] = $url;
-                    } else {
-                        //don't render duplicates
-                        //$hrefLangs[$hreflang . '_' . $relationUid] = $url;
+            $languages = $this->languageMenuProcessor->process($this->cObj, [], [], []);
+
+            $connectedNews = $this->getConnectedNewsHreflang($newsId);
+            if (!empty($connectedNews)) {
+                foreach ($connectedNews as $relationUid => $relationHreflang) {
+                    foreach ($relationHreflang as $hreflang => $url) {
+                        if (!isset($hrefLangs[$hreflang])) {
+                            $hrefLangs[$hreflang] = $url;
+                        } else {
+                            //don't render duplicates
+                            //$hrefLangs[$hreflang . '_' . $relationUid] = $url;
+                        }
                     }
                 }
+                ksort($hrefLangs);
             }
-            ksort($hrefLangs);
-        }
-        if (count($hrefLangs) > 1 && !isset($hrefLangs['x-default'])) {
-            if (array_key_exists($languages['languagemenu'][0]['hreflang'], $hrefLangs)) {
-                $hrefLangs['x-default'] = $hrefLangs[$languages['languagemenu'][0]['hreflang']];
+            if (count($hrefLangs) > 1 && !isset($hrefLangs['x-default'])) {
+                if (array_key_exists($languages['languagemenu'][0]['hreflang'], $hrefLangs)) {
+                    $hrefLangs['x-default'] = $hrefLangs[$languages['languagemenu'][0]['hreflang']];
+                }
             }
-        }
 
-        $event->setHrefLangs($hrefLangs);
+            $event->setHrefLangs($hrefLangs);
+        }
     }
 
     /**
-     * @param int $pageId
-     * @param int $languageId
-     * @param ServerRequestInterface|null $request
+     * @param int $newsUid
+     *
      * @return array
+     * @throws NoSuchCacheException
+     * @throws NoSuchCacheGroupException
+     * @throws SiteNotFoundException
      */
-    protected function getTranslatedPageRecord(int $pageId, int $languageId, ServerRequestInterface $request = null): array
+    protected function getConnectedNewsHreflang(int $newsUid): array
     {
-        if (!empty($request)) {
-            $site = $request->getAttribute('site');
-            if (!$site instanceof SiteInterface) {
-                return $this->getTypoScriptFrontendController()->page;
-            }
-        }
-
-        return PageUtility::getPageTranslationRecord($pageId, $languageId, $site ?? null);
-    }
-
-    /**
-     * @param $pageUid
-     * @return array
-     * @throws NoSuchCacheGroupException|NoSuchCacheException
-     */
-    protected function getConnectedPagesHreflang($pageUid): array
-    {
-        $relationUids = $this->relationUtility->getCachedRelations($pageUid);
+        $relationUids = $this->relationUtility->getCachedRelations($newsUid);
         $hreflangs = [];
 
         foreach ($relationUids as $relationUid) {
-            $site = GeneralUtility::makeInstance(SiteFinder::class)->getSiteByPageId($relationUid);
+            $newsRecord = $this->newsAvailability->fetchNewsRecord($relationUid, 0);
+            if ($newsRecord['no_index'] ?? 0) continue;
+            $site = GeneralUtility::makeInstance(SiteFinder::class)->getSiteByPageId($newsRecord['pid']);
             /** @var SiteLanguage $language */
             foreach ($site->getLanguages() as $language) {
-                $translation = $this->getTranslatedPageRecord($relationUid, $language->getLanguageId());
-                if (empty($translation)) continue;
-                $href = UrlUtility::getAbsoluteUrl($translation['slug'], $language);
+                $translation = $this->newsAvailability->fetchNewsRecord($relationUid, $language->getLanguageId());
+
+                if (empty($translation) || (int)$site->getConfiguration()['defaultNewsDetailPid'] === 0) continue;
+
+                //get url for detail page and attach news path_segment
+                $page = PageUtility::getPageTranslationRecord((int)$site->getConfiguration()['defaultNewsDetailPid'], $language->getLanguageId(), $site);
+                $href = UrlUtility::getAbsoluteUrl($page['slug'] . '/' . $translation['path_segment'], $language);
+
                 $hreflangs[$relationUid][$language->getHreflang()] = $href;
 
-                if ($language->getLanguageId() === 0 && !isset($hreflangs['x-default']) && $translation['tx_hreflang_pages_xdefault']) {
+                if ($language->getLanguageId() === 0 && !isset($hreflangs['x-default']) && $translation['tx_hreflang_news_xdefault']) {
                     $hreflangs[$relationUid]['x-default'] = $href;
                 }
             }
@@ -134,4 +142,5 @@ class HreflangNewsGenerator extends HrefLangGenerator
 
         return $hreflangs;
     }
+
 }

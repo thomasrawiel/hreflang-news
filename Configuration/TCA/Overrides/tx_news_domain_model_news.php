@@ -134,7 +134,7 @@ call_user_func(function($_EXTKEY = 'hreflang_news', $table = 'tx_news_domain_mod
         --palette--;;hreflang_connections,
         --palette--;;hreflang_preview",
         '',
-        'after:tags');
+        'after:max_image_preview');
 
 });
 

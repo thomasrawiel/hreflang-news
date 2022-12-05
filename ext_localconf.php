@@ -14,9 +14,9 @@ call_user_func(function ($_EXTKEY = 'hreflang_news') {
     }
     //Clear cache when pages cache is cleared
     if (!isset($GLOBALS['TYPO3_CONF_VARS']['SYS']['caching']['cacheConfigurations']['tx_hreflang_news_cache']['groups'])) {
-        $GLOBALS['TYPO3_CONF_VARS']['SYS']['caching']['cacheConfigurations']['tx_hreflang_news_cache']['groups'] = ['pages'];
+        $GLOBALS['TYPO3_CONF_VARS']['SYS']['caching']['cacheConfigurations']['tx_hreflang_news_cache']['groups'] = ['tx_news_domain_model_news'];
     }
 
-//    $GLOBALS ['TYPO3_CONF_VARS']['SC_OPTIONS']['t3lib/class.t3lib_tcemain.php']['processDatamapClass'][$_EXTKEY] = \TRAW\HreflangPages\Hooks\TCEmainHook::class;
-//    $GLOBALS ['TYPO3_CONF_VARS']['SC_OPTIONS']['t3lib/class.t3lib_tcemain.php']['processCmdmapClass'][$_EXTKEY] = \TRAW\HreflangPages\Hooks\TCEmainHook::class;
+    $GLOBALS ['TYPO3_CONF_VARS']['SC_OPTIONS']['t3lib/class.t3lib_tcemain.php']['processDatamapClass'][$_EXTKEY] = \TRAW\HreflangNews\Hooks\TCEmainHook::class;
+    $GLOBALS ['TYPO3_CONF_VARS']['SC_OPTIONS']['t3lib/class.t3lib_tcemain.php']['processCmdmapClass'][$_EXTKEY] = \TRAW\HreflangNews\Hooks\TCEmainHook::class;
 });
