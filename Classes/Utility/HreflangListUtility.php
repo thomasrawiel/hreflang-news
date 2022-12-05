@@ -111,20 +111,18 @@ class HreflangListUtility
     protected function getHreflangPreview(): string
     {
         $content = "<strong class='headline'>" . LocalizationUtility::translate(self::lll . 'hreflang.headline') . "</strong>";
-
-        //temp
-        return $content;
+        
         $hrefLangs = [];
 
         foreach ($this->site->getLanguages() as $language) {
             if ($language === $this->site->getDefaultLanguage()) {
                 $hrefLangs[$language->getHreflang()] = UrlUtility::getAbsoluteUrl($this->databaseRow['path_segment'], $language);
             } else {
-                $newsAvailability = GeneralUtility::makeInstance(NewsAvailability::class);
-
-                if ($newsAvailability->check($language->getLanguageId(), $this->databaseRow['uid'])) {
+                if ($this->newsAvailability->check($language->getLanguageId(), $this->databaseRow['uid'])) {
                     $translation = $this->newsAvailability->fetchNewsRecord($this->databaseRow['uid'], $language->getLanguageId());
-                    $hrefLangs[$language->getHreflang()] = UrlUtility::getAbsoluteUrl($translation['path_segment'], $language);
+
+                    $page = PageUtility::getPageTranslationRecord((int)$this->site->getConfiguration()['defaultNewsDetailPid'], $language->getLanguageId(), $this->site);
+                    $hrefLangs[$language->getHreflang()] = UrlUtility::getAbsoluteUrl($page['slug'] . '/' . $translation['path_segment'], $language);
                 }
             }
         }
@@ -187,14 +185,18 @@ class HreflangListUtility
             : [];
 
         foreach ($relationUids as $relationUid) {
+            $newsRecord = $this->newsAvailability->fetchNewsRecord($relationUid, 0);
+            if ($newsRecord['no_index'] ?? 0) continue;
             if ($relationUid === $this->databaseRow['uid']) continue;
             $site = GeneralUtility::makeInstance(SiteFinder::class)->getSiteByPageId($relationUid);
             /** @var SiteLanguage $language */
             foreach ($site->getLanguages() as $language) {
-                $translation = $this->getTranslatedPageRecord($relationUid, $language->getLanguageId());
+                $translation = $this->newsAvailability->fetchNewsRecord($relationUid, $language->getLanguageId());
                 if (empty($translation)) continue;
 
-                $href = UrlUtility::getAbsoluteUrl($translation['slug'], $language);
+                $page = PageUtility::getPageTranslationRecord((int)$site->getConfiguration()['defaultNewsDetailPid'], $language->getLanguageId(), $site);
+                $href = UrlUtility::getAbsoluteUrl($page['slug'] . '/' . $translation['path_segment'], $language);
+
                 $hreflangs[$relationUid][$language->getHreflang()] = $href;
 
                 if ($language->getLanguageId() === 0 && !isset($hreflangs[$relationUid]['x-default']) && $translation['tx_hreflang_news_xdefault']) {
