@@ -29,6 +29,9 @@ namespace TRAW\HreflangNews\Seo;
 
 
 use TYPO3\CMS\Core\Database\ConnectionPool;
+use TYPO3\CMS\Core\Site\Entity\NullSite;
+use TYPO3\CMS\Core\Site\Entity\SiteInterface;
+use TYPO3\CMS\Core\Site\SiteFinder;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 class NewsAvailability extends \GeorgRinger\News\Seo\NewsAvailability
@@ -77,5 +80,36 @@ class NewsAvailability extends \GeorgRinger\News\Seo\NewsAvailability
             ->fetch();
 
         return $row ?: null;
+    }
+
+    /**
+     * @param int $languageId
+     * @param int $newsId
+     * @return bool
+     */
+    public function check(int $languageId, int $newsId = 0): bool
+    {
+        // get it from current request
+        if ($newsId === 0) {
+            $newsId = $this->getNewsIdFromRequest();
+        }
+        if ($newsId === 0) {
+            throw new \UnexpectedValueException('No news id provided', 1586431984);
+        }
+
+        /** @var SiteInterface $site */
+        $site = $this->getRequest()->getAttribute('site');
+        if(is_a($site, \TYPO3\CMS\Core\Site\Entity\NullSite::class)){
+            $newsRecord = $this->getNewsRecord($newsId, 0);
+            $site = GeneralUtility::makeInstance(SiteFinder::class)->getSiteByPageId($newsRecord['pid']);
+        }
+
+        $allAvailableLanguagesOfSite = $site->getAllLanguages();
+
+        $targetLanguage = $this->getLanguageFromAllLanguages($allAvailableLanguagesOfSite, $languageId);
+        if (!$targetLanguage) {
+            throw new \UnexpectedValueException('Target language could not be found', 1586431985);
+        }
+        return $this->mustBeIncluded($newsId, $targetLanguage);
     }
 }
