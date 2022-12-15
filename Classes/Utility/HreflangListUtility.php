@@ -115,13 +115,13 @@ class HreflangListUtility
         $hrefLangs = [];
 
         foreach ($this->site->getLanguages() as $language) {
+            $page = PageUtility::getPageTranslationRecord((int)$this->site->getConfiguration()['defaultNewsDetailPid'], $language->getLanguageId(), $this->site);
             if ($language === $this->site->getDefaultLanguage()) {
-                $hrefLangs[$language->getHreflang()] = UrlUtility::getAbsoluteUrl($this->databaseRow['path_segment'], $language);
+                $hrefLangs[$language->getHreflang()] = UrlUtility::getAbsoluteUrl($page['slug'] . '/' . $this->databaseRow['path_segment'], $language);
             } else {
                 if ($this->newsAvailability->check($language->getLanguageId(), $this->databaseRow['uid'])) {
                     $translation = $this->newsAvailability->fetchNewsRecord($this->databaseRow['uid'], $language->getLanguageId());
 
-                    $page = PageUtility::getPageTranslationRecord((int)$this->site->getConfiguration()['defaultNewsDetailPid'], $language->getLanguageId(), $this->site);
                     $hrefLangs[$language->getHreflang()] = UrlUtility::getAbsoluteUrl($page['slug'] . '/' . $translation['path_segment'], $language);
                 }
             }
