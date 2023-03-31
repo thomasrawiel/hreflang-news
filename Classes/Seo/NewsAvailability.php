@@ -29,6 +29,7 @@ namespace TRAW\HreflangNews\Seo;
 
 
 use TYPO3\CMS\Core\Database\ConnectionPool;
+use TYPO3\CMS\Core\Exception\SiteNotFoundException;
 use TYPO3\CMS\Core\Site\Entity\NullSite;
 use TYPO3\CMS\Core\Site\Entity\SiteInterface;
 use TYPO3\CMS\Core\Site\SiteFinder;
@@ -83,12 +84,17 @@ class NewsAvailability extends \GeorgRinger\News\Seo\NewsAvailability
     }
 
     /**
-     * @param int $languageId
-     * @param int $newsId
+     * @param int        $languageId
+     * @param int|string $newsId
+     *
      * @return bool
+     * @throws SiteNotFoundException
      */
-    public function check(int $languageId, int $newsId = 0): bool
+    public function check(int $languageId, $newsId = 0): bool
     {
+        if(strpos($newsId, 'NEW') !==false) {
+            return false;
+        }
         // get it from current request
         if ($newsId === 0) {
             $newsId = $this->getNewsIdFromRequest();
