@@ -69,6 +69,10 @@ class HreflangNewsGenerator extends HrefLangGenerator
      */
     public function __invoke(ModifyHrefLangTagsEvent $event): void
     {
+        if ((int)$this->getTypoScriptFrontendController()->page['no_index'] === 1) {
+            return;
+        }
+
         $hrefLangs = $event->getHrefLangs();
         $newsId = $this->newsAvailability->getNewsIdFromRequest();
 
