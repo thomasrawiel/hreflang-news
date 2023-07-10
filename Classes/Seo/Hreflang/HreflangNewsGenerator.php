@@ -124,7 +124,7 @@ class HreflangNewsGenerator extends HrefLangGenerator
 
         foreach ($relationUids as $relationUid) {
             $newsRecord = $this->newsAvailability->fetchNewsRecord($relationUid, 0);
-            if ($newsRecord['no_index'] ?? 0) continue;
+            if ($newsRecord['robots_index'] ?? 0) continue;
             $site = GeneralUtility::makeInstance(SiteFinder::class)->getSiteByPageId($newsRecord['pid']);
             /** @var SiteLanguage $language */
             foreach ($site->getLanguages() as $language) {

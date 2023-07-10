@@ -74,7 +74,7 @@ class NewsAvailability extends \GeorgRinger\News\Seo\NewsAvailability
         }
 
         $row = $queryBuilder
-            ->select('uid', 'pid', 'l10n_parent', 'sys_language_uid', 'path_segment', 'tx_hreflang_news_xdefault', 'no_index', 'no_follow')
+            ->select('uid', 'pid', 'l10n_parent', 'sys_language_uid', 'path_segment', 'tx_hreflang_news_xdefault', 'robots_index', 'robots_follow')
             ->from('tx_news_domain_model_news')
             ->where(...$where)
             ->executeQuery()->fetchAssociative();

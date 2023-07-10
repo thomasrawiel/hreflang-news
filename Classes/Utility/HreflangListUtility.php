@@ -75,7 +75,7 @@ class HreflangListUtility
      */
     public function generateHrefLangList(): string
     {
-        if ($this->databaseRow['no_index'] === 1) {
+        if ($this->databaseRow['robots_index'] === 1) {
             return $this->generateHtml(LocalizationUtility::translate(self::lll . 'no-index-no-preview'));
         }
 
