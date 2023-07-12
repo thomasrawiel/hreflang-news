@@ -75,7 +75,7 @@ class HreflangListUtility
      */
     public function generateHrefLangList(): string
     {
-        if ($this->databaseRow['robots_index'] === 1) {
+        if ($this->databaseRow['robots_index'] === 0) {
             return $this->generateHtml(LocalizationUtility::translate(self::lll . 'no-index-no-preview'));
         }
 
@@ -186,7 +186,7 @@ class HreflangListUtility
 
         foreach ($relationUids as $relationUid) {
             $newsRecord = $this->newsAvailability->fetchNewsRecord($relationUid, 0);
-            if ($newsRecord['no_index'] ?? 1) continue;
+            if (!$newsRecord['robots_index']) continue;
             if ($relationUid === $this->databaseRow['uid']) continue;
             $site = GeneralUtility::makeInstance(SiteFinder::class)->getSiteByPageId($newsRecord['pid']);
             /** @var SiteLanguage $language */
