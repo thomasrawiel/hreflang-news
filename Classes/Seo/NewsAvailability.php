@@ -29,8 +29,8 @@ namespace TRAW\HreflangNews\Seo;
 
 
 use TYPO3\CMS\Core\Database\ConnectionPool;
+use TYPO3\CMS\Core\Database\Query\Restriction\HiddenRestriction;
 use TYPO3\CMS\Core\Exception\SiteNotFoundException;
-use TYPO3\CMS\Core\Site\Entity\NullSite;
 use TYPO3\CMS\Core\Site\Entity\SiteInterface;
 use TYPO3\CMS\Core\Site\SiteFinder;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
@@ -73,6 +73,8 @@ class NewsAvailability extends \GeorgRinger\News\Seo\NewsAvailability
             ];
         }
 
+        $queryBuilder->getRestrictions()->removeByType(HiddenRestriction::class);
+
         $row = $queryBuilder
             ->select('uid', 'pid', 'l10n_parent', 'sys_language_uid', 'path_segment', 'tx_hreflang_news_xdefault', 'robots_index', 'robots_follow')
             ->from('tx_news_domain_model_news')
@@ -91,7 +93,7 @@ class NewsAvailability extends \GeorgRinger\News\Seo\NewsAvailability
      */
     public function check(int $languageId, $newsId = 0): bool
     {
-        if(strpos($newsId, 'NEW') !==false) {
+        if (strpos($newsId, 'NEW') !== false) {
             return false;
         }
         // get it from current request
@@ -104,7 +106,7 @@ class NewsAvailability extends \GeorgRinger\News\Seo\NewsAvailability
 
         /** @var SiteInterface $site */
         $site = $this->getRequest()->getAttribute('site');
-        if(is_a($site, \TYPO3\CMS\Core\Site\Entity\NullSite::class)){
+        if (is_a($site, \TYPO3\CMS\Core\Site\Entity\NullSite::class)) {
             $newsRecord = $this->getNewsRecord($newsId, 0);
             $site = GeneralUtility::makeInstance(SiteFinder::class)->getSiteByPageId($newsRecord['pid']);
         }
