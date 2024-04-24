@@ -150,7 +150,7 @@ class HreflangListUtility
         if (count($hrefLangs) > 1) {
             $content .= '<ul class="hrefLangs">';
             foreach ($hrefLangs as $hreflang => $url) {
-                $content .= "<li><strong>${hreflang}</strong> (${url})</li>";
+                $content .= "<li><strong>$hreflang</strong> ($url)</li>";
             }
             $content .= '</ul>';
         } else {

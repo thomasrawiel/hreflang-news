@@ -25,7 +25,7 @@
  * Last modified: 24.11.22, 14:27
  */
 defined('TYPO3') or die('Access denied.');
-call_user_func(function($_EXTKEY = 'hreflang_news', $table = 'tx_news_domain_model_news') {
+call_user_func(function ($_EXTKEY = 'hreflang_news', $table = 'tx_news_domain_model_news') {
     $LLL = 'LLL:EXT:hreflang_news/Resources/Private/Language/locallang_tca.xlf:';
     \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addTCAcolumns($table, [
         'tx_hreflang_news_hreflanglist' => [
@@ -34,13 +34,13 @@ call_user_func(function($_EXTKEY = 'hreflang_news', $table = 'tx_news_domain_mod
                 'OR' => [
                     'FIELD:sys_language_uid:=:0',
                     'FIELD:sys_language_uid:REQ:false',
-                ]
+                ],
             ],
             'label' => $LLL . 'page.preview',
             'config' => [
                 'type' => 'none',
-                'renderType' => 'hreflanglistnews'
-            ]
+                'renderType' => 'hreflanglistnews',
+            ],
         ],
         'tx_hreflang_news_news' => [
             'exclude' => true,
@@ -48,7 +48,7 @@ call_user_func(function($_EXTKEY = 'hreflang_news', $table = 'tx_news_domain_mod
                 'OR' => [
                     'FIELD:sys_language_uid:=:0',
                     'FIELD:sys_language_uid:REQ:false',
-                ]
+                ],
             ],
             'label' => $LLL . 'connected-pages',
             'config' => [
@@ -74,7 +74,7 @@ call_user_func(function($_EXTKEY = 'hreflang_news', $table = 'tx_news_domain_mod
                 'OR' => [
                     'FIELD:sys_language_uid:=:0',
                     'FIELD:sys_language_uid:REQ:false',
-                ]
+                ],
             ],
             'label' => $LLL . 'connected-pages-2',
             'config' => [
@@ -103,7 +103,7 @@ call_user_func(function($_EXTKEY = 'hreflang_news', $table = 'tx_news_domain_mod
                 'OR' => [
                     'FIELD:sys_language_uid:=:0',
                     'FIELD:sys_language_uid:REQ:false',
-                ]
+                ],
             ],
             'label' => $LLL . 'force-x-default',
             'config' => [
@@ -113,24 +113,24 @@ call_user_func(function($_EXTKEY = 'hreflang_news', $table = 'tx_news_domain_mod
                     [
                         0 => $LLL . 'force-x-default.hint',
                         1 => '',
-                    ]
+                    ],
                 ],
                 'default' => 0,
-            ]
+            ],
         ],
     ]);
 
     $GLOBALS['TCA'][$table]['palettes']['hreflang_connections'] = [
-        'label' => $LLL.'palette.hreflang_connections',
+        'label' => $LLL . 'palette.hreflang_connections',
         'showitem' => 'linebreak--,tx_hreflang_news_news,tx_hreflang_news_news_2,--linebreak--,tx_hreflang_news_xdefault',
     ];
     $GLOBALS['TCA'][$table]['palettes']['hreflang_preview'] = [
         'label' => 'Hreflang Preview',
-        'showitem' => 'tx_hreflang_news_hreflanglist'
+        'showitem' => 'tx_hreflang_news_hreflanglist',
     ];
 
     \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addToAllTCAtypes($table,
-        "--div--;${LLL}div.hreflang,
+        "--div--;" . $LLL . "div.hreflang,
         --palette--;;hreflang_connections,
         --palette--;;hreflang_preview",
         '',
