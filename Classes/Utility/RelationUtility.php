@@ -21,6 +21,10 @@ use TYPO3\CMS\Core\Database\Query\QueryBuilder;
 use TYPO3\CMS\Core\Database\Query\Restriction\DeletedRestriction;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
+/**
+ * Class RelationUtility
+ * @package TRAW\HreflangNews\Utility
+ */
 class RelationUtility
 {
     /**
@@ -33,10 +37,12 @@ class RelationUtility
      */
     protected $getParameters;
 
+    /**
+     *
+     */
     public function __construct()
     {
         $this->cacheManager = GeneralUtility::makeInstance(CacheManager::class);
-        $this->getParameters = GeneralUtility::_GET();
     }
 
     /**
@@ -87,7 +93,7 @@ class RelationUtility
 
         $affectedRows = $queryBuilder
             ->delete('tx_hreflang_news_news_news_mm')
-            ->where($queryBuilder->expr()->orX(
+            ->where($queryBuilder->expr()->or(
                 $queryBuilder->expr()->eq('uid_local', $queryBuilder->createNamedParameter($newsUid, PDO::PARAM_INT)),
                 $queryBuilder->expr()->eq('uid_foreign', $queryBuilder->createNamedParameter($newsUid, PDO::PARAM_INT))
             ))
@@ -128,7 +134,7 @@ class RelationUtility
             ->select('mm.*')
             ->from('tx_hreflang_news_news_news_mm', 'mm')
             ->leftJoin('mm', 'tx_news_domain_model_news', 'n', 'mm.uid_foreign = n.uid')
-            ->where($queryBuilder->expr()->orX(
+            ->where($queryBuilder->expr()->or(
                 $queryBuilder->expr()->eq('mm.uid_local', $newsUid),
                 $queryBuilder->expr()->eq('mm.uid_foreign', $newsUid)
             ))
@@ -144,7 +150,7 @@ class RelationUtility
                 ->select('mm.*')
                 ->from('tx_hreflang_news_news_news_mm', 'mm')
                 ->leftJoin('mm', 'tx_news_domain_model_news', 'n', 'mm.uid_foreign = n.uid')
-                ->where($queryBuilder2->expr()->andX(
+                ->where($queryBuilder2->expr()->and(
                     $queryBuilder2->expr()->eq('mm.uid_local', (int)$relation['uid_local']),
                     $queryBuilder2->expr()->neq('mm.uid_foreign', (int)$newsUid)
                 ))
@@ -162,7 +168,8 @@ class RelationUtility
      * and return the unique uid array, excluding the current page uid
      *
      * @param array $relations
-     * @param int $pageId
+     * @param int   $pageId
+     *
      * @return array
      */
     protected function getAllRelationUids(array $relations, int $pageId): array
@@ -176,6 +183,7 @@ class RelationUtility
 
     /**
      * @param string $cacheIdentifier
+     *
      * @return FrontendInterface
      * @throws NoSuchCacheException
      */

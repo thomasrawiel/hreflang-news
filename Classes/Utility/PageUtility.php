@@ -18,6 +18,7 @@ class PageUtility
      * @param $pageId
      * @param $site
      * @param $languageId
+     *
      * @return mixed
      */
     public static function getPageTranslationRecord($pageId, $languageId, $site = null)

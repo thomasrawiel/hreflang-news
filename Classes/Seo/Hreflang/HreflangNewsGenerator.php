@@ -124,17 +124,19 @@ class HreflangNewsGenerator extends HrefLangGenerator
             $site = GeneralUtility::makeInstance(SiteFinder::class)->getSiteByPageId($newsRecord['pid']);
             /** @var SiteLanguage $language */
             foreach ($site->getLanguages() as $language) {
-                $translation = $this->newsAvailability->fetchNewsRecord($relationUid, $language->getLanguageId());
+                // @extensionScannerIgnoreLine
+                $languageId = $language->getLanguageId();
+                $translation = $this->newsAvailability->fetchNewsRecord($relationUid, $languageId);
 
                 if (empty($translation) || (int)$site->getConfiguration()['defaultNewsDetailPid'] === 0) continue;
 
                 //get url for detail page and attach news path_segment
-                $page = PageUtility::getPageTranslationRecord((int)$site->getConfiguration()['defaultNewsDetailPid'], $language->getLanguageId(), $site);
+                $page = PageUtility::getPageTranslationRecord((int)$site->getConfiguration()['defaultNewsDetailPid'], $languageId, $site);
                 $href = UrlUtility::getAbsoluteUrl($page['slug'] . '/' . $translation['path_segment'], $language);
 
                 $hreflangs[$relationUid][$language->getHreflang()] = $href;
 
-                if ($language->getLanguageId() === 0 && !isset($hreflangs['x-default']) && $translation['tx_hreflang_news_xdefault']) {
+                if ($languageId === 0 && !isset($hreflangs['x-default']) && $translation['tx_hreflang_news_xdefault']) {
                     $hreflangs[$relationUid]['x-default'] = $href;
                 }
             }

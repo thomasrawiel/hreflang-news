@@ -17,8 +17,9 @@ use TYPO3\CMS\Core\Site\Entity\SiteLanguage;
 class UrlUtility
 {
     /**
-     * @param string $url
+     * @param string       $url
      * @param SiteLanguage $siteLanguage
+     *
      * @return string
      */
     public static function getAbsoluteUrl(string $url, SiteLanguage $siteLanguage): string

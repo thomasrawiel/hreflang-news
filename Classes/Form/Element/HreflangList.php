@@ -16,6 +16,10 @@ use TYPO3\CMS\Backend\Form\Element\AbstractFormElement;
 use TYPO3\CMS\Backend\Form\NodeFactory;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
+/**
+ * Class HreflangList
+ * @package TRAW\HreflangNews\Form\Element
+ */
 class HreflangList extends AbstractFormElement
 {
     /**
@@ -23,6 +27,10 @@ class HreflangList extends AbstractFormElement
      */
     protected $hreflangListUtility;
 
+    /**
+     * @param NodeFactory $nodeFactory
+     * @param array       $data
+     */
     public function __construct(NodeFactory $nodeFactory, array $data)
     {
         parent::__construct($nodeFactory, $data);

@@ -28,17 +28,21 @@ class TCEmainHook
      */
     protected $relationUtility;
 
+    /**
+     *
+     */
     public function __construct()
     {
         $this->relationUtility = GeneralUtility::makeInstance(RelationUtility::class);
     }
 
     /**
-     * @param $table
-     * @param $id
-     * @param $recordToDelete
-     * @param null $recordWasDeleted
+     * @param             $table
+     * @param             $id
+     * @param             $recordToDelete
+     * @param null        $recordWasDeleted
      * @param DataHandler $pObj
+     *
      * @throws NoSuchCacheGroupException
      * @throws NoSuchCacheException
      */
@@ -51,6 +55,7 @@ class TCEmainHook
 
     /**
      * @param DataHandler $pObj
+     *
      * @throws NoSuchCacheGroupException
      */
     public function processDatamap_afterAllOperations(DataHandler &$pObj)
@@ -60,7 +65,7 @@ class TCEmainHook
                 if ((int)$uid > 0) {
                     $relations = $this->relationUtility->getCachedRelations($uid);
                     array_push($relations, $uid);
-                    foreach($relations as $relationUid) {
+                    foreach ($relations as $relationUid) {
                         $this->relationUtility->flushRelationCacheForPage($relationUid);
                     }
 

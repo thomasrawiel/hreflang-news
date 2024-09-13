@@ -35,13 +35,30 @@ use TYPO3\CMS\Core\Site\Entity\SiteInterface;
 use TYPO3\CMS\Core\Site\SiteFinder;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
+/**
+ * Class NewsAvailability
+ * @package TRAW\HreflangNews\Seo
+ */
 class NewsAvailability extends \GeorgRinger\News\Seo\NewsAvailability
 {
+    /**
+     * @param int $newsUid
+     * @param int $language
+     *
+     * @return false|mixed[]|null
+     */
     public function fetchNewsRecord(int $newsUid, int $language)
     {
         return $this->getNewsRecord($newsUid, $language);
     }
 
+    /**
+     * @param int $newsId
+     * @param int $language
+     *
+     * @return false|mixed[]|null
+     * @throws \Doctrine\DBAL\Exception
+     */
     protected function getNewsRecord(int $newsId, int $language)
     {
         $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)->getQueryBuilderForTable('tx_news_domain_model_news');
@@ -81,7 +98,7 @@ class NewsAvailability extends \GeorgRinger\News\Seo\NewsAvailability
             ->where(...$where)
             ->executeQuery()->fetchAssociative();
 
-        return $row ?: null;
+        return $row ? : null;
     }
 
     /**
