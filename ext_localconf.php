@@ -1,4 +1,5 @@
 <?php
+
 defined('TYPO3') or die('Access denied.');
 call_user_func(function ($_EXTKEY = 'hreflang_news') {
     //register renderType for Backend preview

@@ -18,7 +18,6 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 /**
  * Class HreflangList
- * @package TRAW\HreflangNews\Form\Element
  */
 class HreflangList extends AbstractFormElement
 {

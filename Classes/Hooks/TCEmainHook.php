@@ -19,7 +19,6 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 /**
  * Class TCEmainHook
- * @package TRAW\HreflangNews\Hooks
  */
 class TCEmainHook
 {
@@ -28,9 +27,6 @@ class TCEmainHook
      */
     protected $relationUtility;
 
-    /**
-     *
-     */
     public function __construct()
     {
         $this->relationUtility = GeneralUtility::makeInstance(RelationUtility::class);
@@ -68,7 +64,6 @@ class TCEmainHook
                     foreach ($relations as $relationUid) {
                         $this->relationUtility->flushRelationCacheForPage($relationUid);
                     }
-
                 }
             }
         }

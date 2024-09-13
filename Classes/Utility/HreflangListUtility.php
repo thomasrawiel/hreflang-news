@@ -11,7 +11,6 @@ namespace TRAW\HreflangNews\Utility;
  * The TYPO3 project - inspiring people to share!
  */
 
-use Psr\Http\Message\ServerRequestInterface;
 use stdClass;
 use TRAW\HreflangNews\Seo\NewsAvailability;
 use TYPO3\CMS\Core\Database\ConnectionPool;
@@ -26,14 +25,10 @@ use TYPO3\CMS\Extbase\Utility\LocalizationUtility;
 
 /**
  * Class HreflangListUtility
- * @package TRAW\HreflangNews\Utility
  */
 class HreflangListUtility
 {
-    /**
-     *
-     */
-    protected const lll = "LLL:EXT:hreflang_news/Resources/Private/Language/locallang_tca.xlf:";
+    protected const lll = 'LLL:EXT:hreflang_news/Resources/Private/Language/locallang_tca.xlf:';
     /**
      * @var array
      */
@@ -45,7 +40,7 @@ class HreflangListUtility
     /**
      * @var Site
      */
-    protected $site;
+    protected ?Site $site = null;
 
     /**
      * @var array
@@ -79,12 +74,11 @@ class HreflangListUtility
             return $this->generateHtml(LocalizationUtility::translate(self::lll . 'no-index-no-preview'));
         }
 
-        if (isset($this->site)) {
+        if (!empty($this->site)) {
             $content = "<div class='row'>"
-                . "<div class='col-md-6'>" . $this->getHreflangPreview() . "</div>"
-                . "<div class='col-md-6'>" . $this->getLanguagePreview() . "</div>"
-                . "</div>";
-
+                . "<div class='col-md-6'>" . $this->getHreflangPreview() . '</div>'
+                . "<div class='col-md-6'>" . $this->getLanguagePreview() . '</div>'
+                . '</div>';
         } else {
             $content = LocalizationUtility::translate(self::lll . 'siteconfig-no-preview');
         }
@@ -95,7 +89,6 @@ class HreflangListUtility
     /**
      * @param int                         $pageId
      * @param int                         $languageId
-     * @param ServerRequestInterface|null $request
      *
      * @return array
      * @throws SiteNotFoundException
@@ -110,7 +103,7 @@ class HreflangListUtility
      */
     protected function getHreflangPreview(): string
     {
-        $content = "<strong class='headline'>" . LocalizationUtility::translate(self::lll . 'hreflang.headline') . "</strong>";
+        $content = "<strong class='headline'>" . LocalizationUtility::translate(self::lll . 'hreflang.headline') . '</strong>';
 
         $hrefLangs = [];
         /** @var SiteLanguage $language */
@@ -147,7 +140,6 @@ class HreflangListUtility
         }
         ksort($hrefLangs);
 
-
         if (count($hrefLangs) > 1) {
             $content .= '<ul class="hrefLangs">';
             foreach ($hrefLangs as $hreflang => $url) {
@@ -163,9 +155,9 @@ class HreflangListUtility
             foreach ($this->messages as $message) {
                 $content .= "<li class='" . $message->messageType . "'>"
                     . $message->text
-                    . "</li>";
+                    . '</li>';
             }
-            $content .= "</ul>";
+            $content .= '</ul>';
         }
 
         return $content;
@@ -176,7 +168,6 @@ class HreflangListUtility
      */
     protected function getConnectedHreflangs()
     {
-
         $hreflangs = [];
 
         $relationUtility = GeneralUtility::makeInstance(RelationUtility::class);
@@ -187,15 +178,21 @@ class HreflangListUtility
 
         foreach ($relationUids as $relationUid) {
             $newsRecord = $this->newsAvailability->fetchNewsRecord($relationUid, 0);
-            if (!$newsRecord['robots_index']) continue;
-            if ($relationUid === $this->databaseRow['uid']) continue;
+            if (!$newsRecord['robots_index']) {
+                continue;
+            }
+            if ($relationUid === $this->databaseRow['uid']) {
+                continue;
+            }
             $site = GeneralUtility::makeInstance(SiteFinder::class)->getSiteByPageId($newsRecord['pid']);
             /** @var SiteLanguage $language */
             foreach ($site->getLanguages() as $language) {
                 // @extensionScannerIgnoreLine
                 $languageId = $language->getLanguageId();
                 $translation = $this->newsAvailability->fetchNewsRecord($relationUid, $languageId);
-                if (empty($translation)) continue;
+                if (empty($translation)) {
+                    continue;
+                }
 
                 $page = PageUtility::getPageTranslationRecord((int)$site->getConfiguration()['defaultNewsDetailPid'], $languageId, $site);
                 $href = UrlUtility::getAbsoluteUrl($page['slug'] . '/' . $translation['path_segment'], $language);
@@ -235,18 +232,18 @@ class HreflangListUtility
      */
     protected function getLanguagePreview(): string
     {
-        $content = "<strong class='headline'>" . LocalizationUtility::translate(self::lll . 'languages.headline') . "</strong>"
+        $content = "<strong class='headline'>" . LocalizationUtility::translate(self::lll . 'languages.headline') . '</strong>'
             . "<table class='languages'>
                    <thead><tr><th>Title/ Navtitle</th><th>Hreflang</th><th>Translated</th></tr></thead>";
 
-        $content .= "<tbody>";
+        $content .= '<tbody>';
         foreach ($this->site->getLanguages() as $language) {
-            $title = $language->getTitle() . "/" . $language->getNavigationTitle();
+            $title = $language->getTitle() . '/' . $language->getNavigationTitle();
             $hreflang = $language->getHreflang();
             // @extensionScannerIgnoreLine
             $languageId = $language->getLanguageId();
             $isAvailable = call_user_func(function ($l) {
-                return $languageId > 0 && !is_null($this->getNewsTranslatedInLanguage($l));
+                return $l > 0 && !is_null($this->getNewsTranslatedInLanguage($l));
             }, $languageId) ? 'YES' : ($language === $this->site->getDefaultLanguage() ? 'is default' : 'NO');
 
             $content .= <<<HTML
@@ -258,10 +255,9 @@ class HreflangListUtility
                 HTML;
         }
 
-        $content .= "</tbody></table>";
+        $content .= '</tbody></table>';
 
         return $content;
-
     }
 
     /**
@@ -271,7 +267,9 @@ class HreflangListUtility
      */
     protected function getNewsTranslatedInLanguage($languageId)
     {
-        if (empty($this->pageLanguageOverlayRows)) return null;
+        if (empty($this->pageLanguageOverlayRows)) {
+            return null;
+        }
 
         foreach ($this->pageLanguageOverlayRows as $overlay) {
             if ($languageId === $overlay['sys_language_uid']
@@ -320,6 +318,6 @@ class HreflangListUtility
     {
         return "<section class='tx-hreflang-list'>"
             . $content
-            . "</section >";
+            . '</section >';
     }
 }

@@ -126,12 +126,12 @@ call_user_func(function ($_EXTKEY = 'hreflang_news', $table = 'tx_news_domain_mo
         'showitem' => 'tx_hreflang_news_hreflanglist',
     ];
 
-    \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addToAllTCAtypes($table,
-        "--div--;" . $LLL . "div.hreflang,
+    \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addToAllTCAtypes(
+        $table,
+        '--div--;' . $LLL . 'div.hreflang,
         --palette--;;hreflang_connections,
-        --palette--;;hreflang_preview",
+        --palette--;;hreflang_preview',
         '',
-        'after:max_image_preview');
-
+        'after:max_image_preview'
+    );
 });
-

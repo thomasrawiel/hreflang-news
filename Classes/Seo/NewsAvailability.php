@@ -27,17 +27,14 @@
 
 namespace TRAW\HreflangNews\Seo;
 
-
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Database\Query\Restriction\HiddenRestriction;
 use TYPO3\CMS\Core\Exception\SiteNotFoundException;
-use TYPO3\CMS\Core\Site\Entity\SiteInterface;
 use TYPO3\CMS\Core\Site\SiteFinder;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 /**
  * Class NewsAvailability
- * @package TRAW\HreflangNews\Seo
  */
 class NewsAvailability extends \GeorgRinger\News\Seo\NewsAvailability
 {
@@ -98,7 +95,7 @@ class NewsAvailability extends \GeorgRinger\News\Seo\NewsAvailability
             ->where(...$where)
             ->executeQuery()->fetchAssociative();
 
-        return $row ? : null;
+        return $row ?: null;
     }
 
     /**
@@ -110,7 +107,7 @@ class NewsAvailability extends \GeorgRinger\News\Seo\NewsAvailability
      */
     public function check(int $languageId, $newsId = 0): bool
     {
-        if (strpos($newsId, 'NEW') !== false) {
+        if (str_contains($newsId, 'NEW')) {
             return false;
         }
         // get it from current request
@@ -121,11 +118,10 @@ class NewsAvailability extends \GeorgRinger\News\Seo\NewsAvailability
             throw new \UnexpectedValueException('No news id provided', 1586431984);
         }
 
-        /** @var SiteInterface $site */
         $site = $this->getRequest()->getAttribute('site');
         if (is_a($site, \TYPO3\CMS\Core\Site\Entity\NullSite::class)) {
             $newsRecord = $this->getNewsRecord($newsId, 0);
-            $site = GeneralUtility::makeInstance(SiteFinder::class)->getSiteByPageId($newsRecord['pid']);
+            $site = (GeneralUtility::makeInstance(SiteFinder::class))->getSiteByPageId($newsRecord['pid']);
         }
 
         $allAvailableLanguagesOfSite = $site->getAllLanguages();

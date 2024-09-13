@@ -23,7 +23,6 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 /**
  * Class RelationUtility
- * @package TRAW\HreflangNews\Utility
  */
 class RelationUtility
 {
@@ -37,9 +36,6 @@ class RelationUtility
      */
     protected $getParameters;
 
-    /**
-     *
-     */
     public function __construct()
     {
         $this->cacheManager = GeneralUtility::makeInstance(CacheManager::class);
@@ -48,15 +44,15 @@ class RelationUtility
     /**
      * Get hreflang relations from cache or generate the list and cache them
      *
-     * @param int $newsUid
+     * @param $newsUid
      *
      * @return array $relations
      * @throws NoSuchCacheGroupException|NoSuchCacheException
      */
-    public function getCachedRelations(int $newsUid): array
+    public function getCachedRelations($newsUid): array
     {
         $relations = $this->getCacheInstance()->get($newsUid);
-        if (false === $relations) {
+        if ($relations === false) {
             $relations = $this->buildRelations($newsUid);
             $this->resetRelationCache($newsUid, $relations);
         }
@@ -98,7 +94,7 @@ class RelationUtility
                 $queryBuilder->expr()->eq('uid_foreign', $queryBuilder->createNamedParameter($newsUid, PDO::PARAM_INT))
             ))
             ->execute();
-        if ($affectedRows > 0) {
+        if ((int)$affectedRows > 0) {
             $this->flushRelationCacheForPage($newsUid);
             foreach ($relations as $relationUid) {
                 $this->flushRelationCacheForPage($relationUid);
@@ -160,7 +156,7 @@ class RelationUtility
         }
 
         //eliminate duplicates
-        return array_map("unserialize", array_unique(array_map("serialize", $relations)));
+        return array_map('unserialize', array_unique(array_map('serialize', $relations)));
     }
 
     /**
