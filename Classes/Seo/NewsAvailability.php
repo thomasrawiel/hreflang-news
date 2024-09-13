@@ -27,21 +27,35 @@
 
 namespace TRAW\HreflangNews\Seo;
 
-
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Database\Query\Restriction\HiddenRestriction;
 use TYPO3\CMS\Core\Exception\SiteNotFoundException;
-use TYPO3\CMS\Core\Site\Entity\SiteInterface;
 use TYPO3\CMS\Core\Site\SiteFinder;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
+/**
+ * Class NewsAvailability
+ */
 class NewsAvailability extends \GeorgRinger\News\Seo\NewsAvailability
 {
+    /**
+     * @param int $newsUid
+     * @param int $language
+     *
+     * @return false|mixed[]|null
+     */
     public function fetchNewsRecord(int $newsUid, int $language)
     {
         return $this->getNewsRecord($newsUid, $language);
     }
 
+    /**
+     * @param int $newsId
+     * @param int $language
+     *
+     * @return false|mixed[]|null
+     * @throws \Doctrine\DBAL\Exception
+     */
     protected function getNewsRecord(int $newsId, int $language)
     {
         $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)->getQueryBuilderForTable('tx_news_domain_model_news');
@@ -93,7 +107,7 @@ class NewsAvailability extends \GeorgRinger\News\Seo\NewsAvailability
      */
     public function check(int $languageId, $newsId = 0): bool
     {
-        if (strpos($newsId, 'NEW') !== false) {
+        if (str_contains($newsId, 'NEW')) {
             return false;
         }
         // get it from current request
@@ -104,11 +118,10 @@ class NewsAvailability extends \GeorgRinger\News\Seo\NewsAvailability
             throw new \UnexpectedValueException('No news id provided', 1586431984);
         }
 
-        /** @var SiteInterface $site */
         $site = $this->getRequest()->getAttribute('site');
         if (is_a($site, \TYPO3\CMS\Core\Site\Entity\NullSite::class)) {
             $newsRecord = $this->getNewsRecord($newsId, 0);
-            $site = GeneralUtility::makeInstance(SiteFinder::class)->getSiteByPageId($newsRecord['pid']);
+            $site = (GeneralUtility::makeInstance(SiteFinder::class))->getSiteByPageId($newsRecord['pid']);
         }
 
         $allAvailableLanguagesOfSite = $site->getAllLanguages();

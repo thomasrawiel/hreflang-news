@@ -53,7 +53,6 @@ call_user_func(function ($_EXTKEY = 'hreflang_news', $table = 'tx_news_domain_mo
             'label' => $LLL . 'connected-pages',
             'config' => [
                 'type' => 'group',
-                'internal_type' => 'db',
                 'allowed' => 'tx_news_domain_model_news',
                 'foreign_table' => 'tx_news_domain_model_news',
                 'MM' => 'tx_hreflang_news_news_news_mm',
@@ -80,7 +79,6 @@ call_user_func(function ($_EXTKEY = 'hreflang_news', $table = 'tx_news_domain_mo
             'config' => [
                 'readOnly' => true,
                 'type' => 'group',
-                'internal_type' => 'db',
                 'allowed' => 'tx_news_domain_model_news',
                 'foreign_table' => 'tx_news_domain_model_news',
                 'foreign_table_where' => 'AND tx_news_domain_model_news.sys_language_uid = 0',
@@ -111,8 +109,7 @@ call_user_func(function ($_EXTKEY = 'hreflang_news', $table = 'tx_news_domain_mo
                 'renderType' => 'checkboxToggle',
                 'items' => [
                     [
-                        0 => $LLL . 'force-x-default.hint',
-                        1 => '',
+                        'label' => $LLL . 'force-x-default.hint',
                     ],
                 ],
                 'default' => 0,
@@ -129,12 +126,12 @@ call_user_func(function ($_EXTKEY = 'hreflang_news', $table = 'tx_news_domain_mo
         'showitem' => 'tx_hreflang_news_hreflanglist',
     ];
 
-    \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addToAllTCAtypes($table,
-        "--div--;" . $LLL . "div.hreflang,
+    \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addToAllTCAtypes(
+        $table,
+        '--div--;' . $LLL . 'div.hreflang,
         --palette--;;hreflang_connections,
-        --palette--;;hreflang_preview",
+        --palette--;;hreflang_preview',
         '',
-        'after:max_image_preview');
-
+        'after:max_image_preview'
+    );
 });
-

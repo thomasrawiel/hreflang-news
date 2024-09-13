@@ -10,7 +10,6 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 /**
  * Class PageUtility
- * @package TRAW\HreflangPages\Utility
  */
 class PageUtility
 {
@@ -18,6 +17,7 @@ class PageUtility
      * @param $pageId
      * @param $site
      * @param $languageId
+     *
      * @return mixed
      */
     public static function getPageTranslationRecord($pageId, $languageId, $site = null)

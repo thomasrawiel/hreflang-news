@@ -21,6 +21,9 @@ use TYPO3\CMS\Core\Database\Query\QueryBuilder;
 use TYPO3\CMS\Core\Database\Query\Restriction\DeletedRestriction;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
+/**
+ * Class RelationUtility
+ */
 class RelationUtility
 {
     /**
@@ -36,21 +39,20 @@ class RelationUtility
     public function __construct()
     {
         $this->cacheManager = GeneralUtility::makeInstance(CacheManager::class);
-        $this->getParameters = GeneralUtility::_GET();
     }
 
     /**
      * Get hreflang relations from cache or generate the list and cache them
      *
-     * @param int $newsUid
+     * @param $newsUid
      *
      * @return array $relations
      * @throws NoSuchCacheGroupException|NoSuchCacheException
      */
-    public function getCachedRelations(int $newsUid): array
+    public function getCachedRelations($newsUid): array
     {
         $relations = $this->getCacheInstance()->get($newsUid);
-        if (false === $relations) {
+        if ($relations === false) {
             $relations = $this->buildRelations($newsUid);
             $this->resetRelationCache($newsUid, $relations);
         }
@@ -87,12 +89,12 @@ class RelationUtility
 
         $affectedRows = $queryBuilder
             ->delete('tx_hreflang_news_news_news_mm')
-            ->where($queryBuilder->expr()->orX(
+            ->where($queryBuilder->expr()->or(
                 $queryBuilder->expr()->eq('uid_local', $queryBuilder->createNamedParameter($newsUid, PDO::PARAM_INT)),
                 $queryBuilder->expr()->eq('uid_foreign', $queryBuilder->createNamedParameter($newsUid, PDO::PARAM_INT))
             ))
             ->execute();
-        if ($affectedRows > 0) {
+        if ((int)$affectedRows > 0) {
             $this->flushRelationCacheForPage($newsUid);
             foreach ($relations as $relationUid) {
                 $this->flushRelationCacheForPage($relationUid);
@@ -128,7 +130,7 @@ class RelationUtility
             ->select('mm.*')
             ->from('tx_hreflang_news_news_news_mm', 'mm')
             ->leftJoin('mm', 'tx_news_domain_model_news', 'n', 'mm.uid_foreign = n.uid')
-            ->where($queryBuilder->expr()->orX(
+            ->where($queryBuilder->expr()->or(
                 $queryBuilder->expr()->eq('mm.uid_local', $newsUid),
                 $queryBuilder->expr()->eq('mm.uid_foreign', $newsUid)
             ))
@@ -144,7 +146,7 @@ class RelationUtility
                 ->select('mm.*')
                 ->from('tx_hreflang_news_news_news_mm', 'mm')
                 ->leftJoin('mm', 'tx_news_domain_model_news', 'n', 'mm.uid_foreign = n.uid')
-                ->where($queryBuilder2->expr()->andX(
+                ->where($queryBuilder2->expr()->and(
                     $queryBuilder2->expr()->eq('mm.uid_local', (int)$relation['uid_local']),
                     $queryBuilder2->expr()->neq('mm.uid_foreign', (int)$newsUid)
                 ))
@@ -154,7 +156,7 @@ class RelationUtility
         }
 
         //eliminate duplicates
-        return array_map("unserialize", array_unique(array_map("serialize", $relations)));
+        return array_map('unserialize', array_unique(array_map('serialize', $relations)));
     }
 
     /**
@@ -162,7 +164,8 @@ class RelationUtility
      * and return the unique uid array, excluding the current page uid
      *
      * @param array $relations
-     * @param int $pageId
+     * @param int   $pageId
+     *
      * @return array
      */
     protected function getAllRelationUids(array $relations, int $pageId): array
@@ -176,6 +179,7 @@ class RelationUtility
 
     /**
      * @param string $cacheIdentifier
+     *
      * @return FrontendInterface
      * @throws NoSuchCacheException
      */

@@ -19,7 +19,6 @@ use TRAW\HreflangNews\Utility\UrlUtility;
 use TYPO3\CMS\Core\Cache\Exception\NoSuchCacheException;
 use TYPO3\CMS\Core\Cache\Exception\NoSuchCacheGroupException;
 use TYPO3\CMS\Core\Exception\SiteNotFoundException;
-use TYPO3\CMS\Core\LinkHandling\RecordLinkHandler;
 use TYPO3\CMS\Core\Site\Entity\SiteLanguage;
 use TYPO3\CMS\Core\Site\SiteFinder;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
@@ -30,7 +29,6 @@ use TYPO3\CMS\Seo\HrefLang\HrefLangGenerator;
 
 /**
  * Class HreflangNewsGenerator
- * @package TRAW\HreflangNews\Seo\Hreflang
  */
 class HreflangNewsGenerator extends HrefLangGenerator
 {
@@ -44,16 +42,13 @@ class HreflangNewsGenerator extends HrefLangGenerator
      */
     protected $newsAvailability;
 
-    /** @var ContentObjectRenderer */
-    public $cObj;
-
     /**
      * HreflangPagesGenerator constructor.
      *
      * @param ContentObjectRenderer $cObj
      * @param LanguageMenuProcessor $languageMenuProcessor
      */
-    public function __construct(ContentObjectRenderer $cObj, LanguageMenuProcessor $languageMenuProcessor)
+    public function __construct(protected ContentObjectRenderer $cObj, protected LanguageMenuProcessor $languageMenuProcessor)
     {
         parent::__construct($cObj, $languageMenuProcessor);
         $this->relationUtility = GeneralUtility::makeInstance(RelationUtility::class);
@@ -91,10 +86,9 @@ class HreflangNewsGenerator extends HrefLangGenerator
                     foreach ($relationHreflang as $hreflang => $url) {
                         if (!isset($hrefLangs[$hreflang])) {
                             $hrefLangs[$hreflang] = $url;
-                        } else {
-                            //don't render duplicates
-                            //$hrefLangs[$hreflang . '_' . $relationUid] = $url;
                         }
+                        //don't render duplicates
+                        //$hrefLangs[$hreflang . '_' . $relationUid] = $url;
                     }
                 }
                 ksort($hrefLangs);
@@ -124,21 +118,27 @@ class HreflangNewsGenerator extends HrefLangGenerator
 
         foreach ($relationUids as $relationUid) {
             $newsRecord = $this->newsAvailability->fetchNewsRecord($relationUid, 0);
-            if (!$newsRecord['robots_index']) continue;
+            if (!$newsRecord['robots_index']) {
+                continue;
+            }
             $site = GeneralUtility::makeInstance(SiteFinder::class)->getSiteByPageId($newsRecord['pid']);
             /** @var SiteLanguage $language */
             foreach ($site->getLanguages() as $language) {
-                $translation = $this->newsAvailability->fetchNewsRecord($relationUid, $language->getLanguageId());
+                // @extensionScannerIgnoreLine
+                $languageId = $language->getLanguageId();
+                $translation = $this->newsAvailability->fetchNewsRecord($relationUid, $languageId);
 
-                if (empty($translation) || (int)$site->getConfiguration()['defaultNewsDetailPid'] === 0) continue;
+                if (empty($translation) || (int)$site->getConfiguration()['defaultNewsDetailPid'] === 0) {
+                    continue;
+                }
 
                 //get url for detail page and attach news path_segment
-                $page = PageUtility::getPageTranslationRecord((int)$site->getConfiguration()['defaultNewsDetailPid'], $language->getLanguageId(), $site);
+                $page = PageUtility::getPageTranslationRecord((int)$site->getConfiguration()['defaultNewsDetailPid'], $languageId, $site);
                 $href = UrlUtility::getAbsoluteUrl($page['slug'] . '/' . $translation['path_segment'], $language);
 
                 $hreflangs[$relationUid][$language->getHreflang()] = $href;
 
-                if ($language->getLanguageId() === 0 && !isset($hreflangs['x-default']) && $translation['tx_hreflang_news_xdefault']) {
+                if ($languageId === 0 && !isset($hreflangs['x-default']) && $translation['tx_hreflang_news_xdefault']) {
                     $hreflangs[$relationUid]['x-default'] = $href;
                 }
             }
@@ -146,5 +146,4 @@ class HreflangNewsGenerator extends HrefLangGenerator
 
         return $hreflangs;
     }
-
 }

@@ -27,8 +27,4 @@
 
 namespace TRAW\HreflangNews\Utility;
 
-
-class FetchUtility extends \GeorgRinger\NewsSeo\Utility\FetchUtility
-{
-
-}
+class FetchUtility extends \GeorgRinger\NewsSeo\Utility\FetchUtility {}
