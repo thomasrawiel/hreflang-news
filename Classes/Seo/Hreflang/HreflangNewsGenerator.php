@@ -19,7 +19,6 @@ use TRAW\HreflangNews\Utility\UrlUtility;
 use TYPO3\CMS\Core\Cache\Exception\NoSuchCacheException;
 use TYPO3\CMS\Core\Cache\Exception\NoSuchCacheGroupException;
 use TYPO3\CMS\Core\Exception\SiteNotFoundException;
-use TYPO3\CMS\Core\LinkHandling\RecordLinkHandler;
 use TYPO3\CMS\Core\Site\Entity\SiteLanguage;
 use TYPO3\CMS\Core\Site\SiteFinder;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
@@ -44,16 +43,13 @@ class HreflangNewsGenerator extends HrefLangGenerator
      */
     protected $newsAvailability;
 
-    /** @var ContentObjectRenderer */
-    public $cObj;
-
     /**
      * HreflangPagesGenerator constructor.
      *
      * @param ContentObjectRenderer $cObj
      * @param LanguageMenuProcessor $languageMenuProcessor
      */
-    public function __construct(ContentObjectRenderer $cObj, LanguageMenuProcessor $languageMenuProcessor)
+    public function __construct(protected ContentObjectRenderer $cObj, protected LanguageMenuProcessor $languageMenuProcessor)
     {
         parent::__construct($cObj, $languageMenuProcessor);
         $this->relationUtility = GeneralUtility::makeInstance(RelationUtility::class);
